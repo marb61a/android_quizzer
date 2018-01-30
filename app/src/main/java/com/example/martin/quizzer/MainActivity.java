@@ -1,6 +1,7 @@
 package com.example.martin.quizzer;
 
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -76,11 +77,40 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateQuestion(){
+        // This takes modulus rather than division
+        mIndex = (mIndex + 1) % mQuestionBank.length;
+
+        // There will be an alert present if we reach the end
+        if(mIndex == 0){
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+            alert.setTitle("Game Over");
+
+            alert.show();
+        }
+
+        mQuestion = mQuestionBank[mIndex].getQuestionID();
+        mQuestionTextView.setText(mQuestion);
 
     }
 
     public void checkAnswer(boolean userSelection){
         boolean correctAnswer = mQuestionBank[mIndex].isAnswer();
 
+        // User can cancel the Toast message if there is one on screen and a new answer
+        // has been submitted.
+        if (mToastMessage != null){
+            mToastMessage.cancel();
+        }
+
+        if(userSelection == correctAnswer){
+            mToastMessage = Toast.makeText(getApplicationContext(), R.string.correct_toast,
+                    Toast.LENGTH_SHORT);
+            mScore = mScore + 1;
+        } else {
+            mToastMessage = Toast.makeText(getApplicationContext(), R.string.incorrect_toast,
+                    Toast.LENGTH_LONG);
+        }
+
+        mToastMessage.show();
     }
 }
