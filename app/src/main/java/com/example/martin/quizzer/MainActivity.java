@@ -1,8 +1,10 @@
 package com.example.martin.quizzer;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -56,12 +58,23 @@ public class MainActivity extends AppCompatActivity {
         mScoreTextView = findViewById(R.id.score);
         mProgressBar = findViewById(R.id.progress_bar);
 
+        // Restores the 'state' of the app upon screen rotation:
+        if (savedInstanceState != null) {
+            mScore = savedInstanceState.getInt("ScoreKey");
+            mIndex = savedInstanceState.getInt("IndexKey");
+            mScoreTextView.setText("Score " + mScore + "/" + mQuestionBank.length);
+        } else {
+            mScore = 0;
+            mIndex = 0;
+        }
+
         mQuestion = mQuestionBank[mIndex].getQuestionID();
         mQuestionTextView.setText(mQuestion);
 
+
         mTrueButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View v) {
                 checkAnswer(true);
                 updateQuestion();
             }
@@ -69,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
         mFalseButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View v) {
                 checkAnswer(false);
                 updateQuestion();
             }
@@ -84,12 +97,21 @@ public class MainActivity extends AppCompatActivity {
         if(mIndex == 0){
             AlertDialog.Builder alert = new AlertDialog.Builder(this);
             alert.setTitle("Game Over");
-
+            alert.setCancelable(false);
+            alert.setMessage("You scored " + mScore + " points!");
+            alert.setPositiveButton("Close Application", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+            });
             alert.show();
         }
 
         mQuestion = mQuestionBank[mIndex].getQuestionID();
         mQuestionTextView.setText(mQuestion);
+        mProgressBar.incrementProgressBy(PROGRESS_BAR_INCREMENT);
+        mScoreTextView.setText("Score " + mScore + "/" + mQuestionBank.length);
 
     }
 
@@ -113,4 +135,14 @@ public class MainActivity extends AppCompatActivity {
 
         mToastMessage.show();
     }
+
+    // This callback is received when the screen is rotated so we can save the 'state'
+    // of the app in a 'bundle'.
+    public void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+
+        outState.putInt("ScoreKey", mScore);
+        outState.putInt("IndexKey", mIndex);
+    }
+
 }
